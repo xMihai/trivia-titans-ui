@@ -4,4 +4,4 @@ import { compose } from 'recompose'
 
 const C = () => <div>Hello</div>
 
-ReactDOM.render(<C />, document.getElementById('index'))
+ReactDOM.render(<C />, document.getElementById('root'))

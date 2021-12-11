@@ -12,11 +12,14 @@
   "license": "ISC",
   "devDependencies": {
     "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-config-react": "^1.1.7",
     "eslint-config-recommended": "^4.1.0",
     "eslint-plugin-react": "^7.27.1",
     "html-webpack-plugin": "^5.5.0",
+    "import-sort-style-module": "^6.0.0",
     "prettier": "^2.5.1",
+    "prettier-plugin-import-sort": "^0.0.7",
     "ts-loader": "^9.2.6",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
@@ -29,5 +32,11 @@
     "redux": "^4.1.2",
     "redux-actions": "^2.6.5",
     "styled-components": "^5.3.3"
+  },
+  "importSort": {
+    ".js, .jsx": {
+      "style": "module",
+      "parser": "typescript"
+    }
   }
 }
