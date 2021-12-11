@@ -1,0 +1,9 @@
+{
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "git.enableSmartCommit": true,
+  "javascript.validate.enable": false,
+  "files.insertFinalNewline": true,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.enablePreview": false
+}
