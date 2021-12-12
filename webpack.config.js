@@ -14,9 +14,16 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    alias: {
+      '@components': path.resolve(__dirname, 'src/components/'),
+      '@decorators': path.resolve(__dirname, 'src/decorators/'),
+    },
   },
   module: {
-    rules: [{ test: /\.jsx?$/, loader: 'ts-loader' }],
+    rules: [
+      { test: /\.jsx?$/, loader: 'ts-loader' },
+      { test: /\.css$/i, use: ['style-loader', 'css-loader'] },
+    ],
   },
   output: {
     filename: '[name].chunkhash.bundle.js',

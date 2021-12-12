@@ -1,7 +1,5 @@
+import { App } from '@components/App'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { compose } from 'recompose'
 
-const C = () => <div>Hello</div>
-
-ReactDOM.render(<C />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'))

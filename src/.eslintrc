@@ -1,6 +1,6 @@
 {
   "root": true,
-  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:import/recommended"],
   "parserOptions": {
     "ecmaVersion": 9,
     "ecmaFeatures": {
@@ -8,7 +8,7 @@
     },
     "sourceType": "module"
   },
-  "plugins": ["react", "immutable"],
+  "plugins": ["react", "immutable", "import"],
   "env": {
     "es6": true,
     "browser": true
@@ -21,11 +21,6 @@
     "react": {
       "version": "detect"
     },
-    "import/resolver": {
-      "node": {
-        "paths": ["src"],
-        "extensions": [".js", ".jsx"]
-      }
-    }
+    "import/resolver": "webpack"
   }
 }
