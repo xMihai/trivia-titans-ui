@@ -1,29 +1,37 @@
-import { ThemeProvider } from '@material-ui/core'
+import { Global } from '@emotion/react'
+import { inboxStream, outboxStream } from '@logic/socket.js'
 import React, { Component } from 'react'
-// eslint-disable-next-line import/no-unresolved
-import { io } from 'socket.io-client'
 
+import Room from '../Room'
 import * as S from './styled'
 
 class App extends Component {
   constructor(...args) {
     super(...args)
-    const socket = io('http://localhost:3000')
-    socket.on('connect', () => {
-      console.log(socket.id)
-    })
+    this.state = {}
+  }
 
-    socket.on('disconnect', () => {
-      console.log(socket.id)
+  componentDidMount() {
+    this.setState({
+      inboxStreamSubscription: inboxStream.subscribe((event) => {
+        console.log('App', event)
+        if (event.type === 'ROOM/JOIN') {
+          this.setState({ roomId: event.payload })
+        }
+      }),
     })
+  }
+
+  componentWillUnmount() {
+    this.state.inboxStreamSubscription.unsubscribe()
   }
 
   render() {
     return (
-      <S.Wrapper>
-        <S.GlobalStyle />
-        <ThemeProvider {...{ theme: S.theme }}>Hello3</ThemeProvider>
-      </S.Wrapper>
+      <>
+        <Global styles={S.globalStyles} />
+        {this.state.roomId ? <Room /> : null}
+      </>
     )
   }
 }

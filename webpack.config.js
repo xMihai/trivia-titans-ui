@@ -17,11 +17,12 @@ module.exports = {
     alias: {
       '@components': path.resolve(__dirname, 'src/components/'),
       '@decorators': path.resolve(__dirname, 'src/decorators/'),
+      '@logic': path.resolve(__dirname, 'src/logic/'),
     },
   },
   module: {
     rules: [
-      { test: /\.jsx?$/, loader: 'ts-loader' },
+      { test: /\.jsx?$/, loader: 'ts-loader', exclude: [path.resolve(__dirname, 'node_modules/')] },
       { test: /\.css$/i, use: ['style-loader', 'css-loader'] },
     ],
   },
