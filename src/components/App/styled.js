@@ -12,6 +12,7 @@ export const globalStyles = `
     height: 100%;
     overflow: hidden;
     background-color: #EEEEEE;
+    font-family: Roboto;
   }
 `
 

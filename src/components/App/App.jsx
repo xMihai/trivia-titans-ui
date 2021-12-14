@@ -14,9 +14,9 @@ class App extends Component {
   componentDidMount() {
     this.setState({
       inboxStreamSubscription: inboxStream.subscribe((event) => {
-        console.log('App', event)
-        if (event.type === 'ROOM/JOIN') {
-          this.setState({ roomId: event.payload })
+        if (event.type === 'GAME/INVITE') {
+          this.setState({ gameId: event.payload })
+          outboxStream.next({ type: 'GAME/KNOCK', payload: event.payload })
         }
       }),
     })
@@ -30,7 +30,7 @@ class App extends Component {
     return (
       <>
         <Global styles={S.globalStyles} />
-        {this.state.roomId ? <Room /> : null}
+        {this.state.gameId ? <Room /> : null}
       </>
     )
   }

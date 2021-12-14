@@ -5,14 +5,24 @@ import { filter } from 'rxjs/operators'
 
 import * as S from './styled'
 
+const defaultState = { question: '', options: null, timeRemaining: null, buttonStates: [] }
+const buttonStateColors = { CORRECT: 'success', INCORRECT: 'error' }
+
 class Room extends Component {
   constructor(...args) {
     super(...args)
-    this.state = {}
+    this.state = { ...defaultState }
   }
 
   resetGame() {
-    this.setState({ question: '', answers: null, timeRemaining: null })
+    this.setState({ ...defaultState })
+  }
+
+  updateAnswer(payload) {
+    const index = this.state.options.indexOf(payload.answer)
+    const buttonStates = [...this.state.buttonStates]
+    buttonStates[index] = payload.status
+    this.setState({ buttonStates })
   }
 
   componentDidMount() {
@@ -20,7 +30,10 @@ class Room extends Component {
       roomStreamSubscription: inboxStream.pipe(filter((event) => event.type.startsWith('GAME/'))).subscribe((event) => {
         if (event.type === 'GAME/START') this.resetGame()
         if (event.type === 'GAME/QUESTION') this.setState({ question: event.payload })
-        if (event.type === 'GAME/ANSWERS') this.setState({ answers: event.payload })
+        if (event.type === 'GAME/OPTIONS') this.setState({ options: event.payload })
+        if (event.type === 'GAME/UPDATE')
+          this.setState({ question: event.payload.question, options: event.payload.options })
+        if (event.type === 'GAME/SOLUTION') this.updateAnswer(event.payload)
       }),
     })
   }
@@ -33,11 +46,15 @@ class Room extends Component {
     return (
       <S.Room>
         <S.QuestionCard>
-          <CardContent>{this.state.question}</CardContent>
-          {this.state.answers ? (
+          <S.QuestionCardContent>{this.state.question}</S.QuestionCardContent>
+          {this.state.options ? (
             <CardActions>
-              {this.state.answers.map((answer) => (
-                <Button key={answer} onMouseDown={() => outboxStream.next({ type: 'GAME/ANSWER', payload: answer })}>
+              {this.state.options.map((answer, i) => (
+                <Button
+                  key={answer}
+                  color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
+                  onMouseDown={() => outboxStream.next({ type: 'GAME/ANSWER', payload: answer })}
+                >
                   {answer}
                 </Button>
               ))}

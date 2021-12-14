@@ -16,3 +16,9 @@ export const QuestionCard = styled(Card)`
   width: 640px;
   height: 300px;
 `
+
+export const QuestionCardContent = styled(CardContent)`
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+`

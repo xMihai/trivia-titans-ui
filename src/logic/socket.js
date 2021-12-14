@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Subject } from 'rxjs'
 // eslint-disable-next-line import/no-unresolved
 import { io } from 'socket.io-client'
@@ -17,7 +18,8 @@ socket.on('disconnect', () => {
 })
 
 socket.onAny((eventName, ...args) => {
+  console.log('incoming', args[0])
   inboxSubject.next(args[0])
 })
 
-outboxStream.subscribe((event) => console.log(event) || socket.emit('stdEvent', event))
+outboxStream.subscribe((event) => console.log('outgoing', event) || socket.emit('stdEvent', event))
