@@ -2,6 +2,8 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 
 import styled from '@emotion/styled'
 
+import splashImage from '../../assets/bg-2.png'
+
 export const globalStyles = `
   body,
   html,
@@ -11,8 +13,13 @@ export const globalStyles = `
     padding: 0;
     height: 100%;
     overflow: hidden;
-    background-color: #EEEEEE;
     font-family: Roboto;
+  }
+
+  #root {
+    background-image: url(${splashImage});
+    background-size: cover;
+    background-position: center;
   }
 `
 

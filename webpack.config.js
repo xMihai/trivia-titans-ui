@@ -24,6 +24,7 @@ module.exports = {
     rules: [
       { test: /\.jsx?$/, loader: 'ts-loader', exclude: [path.resolve(__dirname, 'node_modules/')] },
       { test: /\.css$/i, use: ['style-loader', 'css-loader'] },
+      { test: /\.(jpg|png|ttf)$/, loader: 'file-loader' },
     ],
   },
   output: {

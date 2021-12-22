@@ -1,11 +1,13 @@
 import { inboxStream, outboxStream } from '@logic/socket.js'
-import { Button } from '@mui/material'
+import { Button, Slide, Typography } from '@mui/material'
 import React, { Component } from 'react'
+import { TransitionGroup } from 'react-transition-group'
 import { filter } from 'rxjs/operators'
 
+import OptionButton from './OptionButton'
 import * as S from './styled'
 
-const defaultState = { question: '', options: null, timeRemaining: null, buttonStates: [null, null, null, null] }
+const defaultState = { question: '', options: null, cards: [], buttonStates: [null, null, null, null] }
 const buttonStateColors = {
   CORRECT: 'success',
   INCORRECT: 'error',
@@ -28,14 +30,29 @@ class Room extends Component {
   }
 
   resetGame() {
-    this.setState({ ...defaultState })
+    this.setState({ ...defaultState, cards: this.state.cards })
   }
 
   updateWithSolution(payload) {
-    const index = this.state.options.indexOf(payload.answer)
+    const index = this.state.options.indexOf(payload.option)
     this.setState({
-      buttonStates: this.state.buttonStates.map((_, i) =>
-        i === index ? payload.status : payload.status === 'CORRECT' ? 'KNOWN_INCORRECT' : 'UNKNOWN'
+      buttonStates: this.state.buttonStates.map((buttonState, i) =>
+        i === index ? payload.status : payload.status === 'CORRECT' ? 'KNOWN_INCORRECT' : buttonState
+      ),
+    })
+  }
+
+  updateWithFinalSolution(payload) {
+    const index = this.state.options.indexOf(payload)
+    this.setState({
+      buttonStates: this.state.buttonStates.map((buttonState, i) =>
+        i === index
+          ? buttonState === 'CORRECT'
+            ? buttonState
+            : 'KNOWN_CORRECT'
+          : buttonState === 'INCORRECT'
+          ? buttonState
+          : 'KNOWN_INCORRECT'
       ),
     })
   }
@@ -48,15 +65,30 @@ class Room extends Component {
       })
   }
 
+  updateIncorrect(incorrectAnswers) {
+    this.setState({
+      buttonStates: this.state.buttonStates.map((option, i) =>
+        incorrectAnswers.includes(this.state.options[i]) ? 'KNOWN_INCORRECT' : option
+      ),
+    })
+  }
+
   componentDidMount() {
     this.setState({
       roomStreamSubscription: inboxStream.pipe(filter((event) => event.type.startsWith('GAME/'))).subscribe((event) => {
         if (event.type === 'GAME/START') this.resetGame()
         if (event.type === 'GAME/QUESTION') this.setState({ question: event.payload })
         if (event.type === 'GAME/OPTIONS') this.setState({ options: event.payload })
+        if (event.type === 'GAME/CARDS') this.setState({ cards: event.payload })
+        if (event.type === 'GAME/TIP') this.updateIncorrect(event.payload)
         if (event.type === 'GAME/UPDATE')
-          this.setState({ question: event.payload.question, options: event.payload.options })
+          this.setState({
+            question: event.payload.question,
+            options: event.payload.options,
+            cards: event.payload.cards,
+          })
         if (event.type === 'GAME/SOLUTION') this.updateWithSolution(event.payload)
+        if (event.type === 'GAME/SOLUTION/FINAL') this.updateWithFinalSolution(event.payload)
         if (event.type === 'GAME/RESULTS') this.updateWithResults(event.payload)
       }),
     })
@@ -68,25 +100,58 @@ class Room extends Component {
 
   render() {
     return (
-      <S.Room>
-        <S.QuestionCard>
-          <S.QuestionCardContent>{this.state.question}</S.QuestionCardContent>
-          {this.state.options ? (
-            <S.QuestionCardOptions>
-              {this.state.options.map((answer, i) => (
-                <Button
-                  key={answer}
-                  color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
-                  variant={buttonStateVariants[this.state.buttonStates[i]] || 'contained'}
-                  onMouseDown={() => outboxStream.next({ type: 'GAME/ANSWER', payload: answer })}
-                >
-                  {answer}
-                </Button>
-              ))}
-            </S.QuestionCardOptions>
-          ) : null}
-        </S.QuestionCard>
-      </S.Room>
+      <TransitionGroup component={S.Room} appear={true}>
+        {[this.state.question].map((question) => (
+          <Slide key={question} direction={'up'}>
+            <S.QuestionCardLayer>
+              <S.QuestionCard>
+                <S.QuestionCardContent>
+                  <Typography variant="h5" align="center">
+                    {this.state.question}
+                  </Typography>
+                </S.QuestionCardContent>
+                {this.state.cards && this.state.cards.length ? (
+                  <S.QuestionCardCards>
+                    {this.state.cards.map((card) => (
+                      <Button
+                        key={card}
+                        size="small"
+                        color={'primary'}
+                        variant={'contained'}
+                        onMouseDown={() =>
+                          outboxStream.next({ type: 'GAME/CARD', payload: card, meta: { roomId: this.props.roomId } })
+                        }
+                      >
+                        {card}
+                      </Button>
+                    ))}
+                  </S.QuestionCardCards>
+                ) : null}
+                {this.state.options ? (
+                  <S.QuestionCardOptions>
+                    {this.state.options.map((option, i) => (
+                      <OptionButton
+                        key={option}
+                        color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
+                        variant={buttonStateVariants[this.state.buttonStates[i]] || 'contained'}
+                        onMouseDown={() =>
+                          outboxStream.next({
+                            type: 'GAME/ANSWER',
+                            payload: option,
+                            meta: { roomId: this.props.roomId },
+                          })
+                        }
+                      >
+                        {option}
+                      </OptionButton>
+                    ))}
+                  </S.QuestionCardOptions>
+                ) : null}
+              </S.QuestionCard>
+            </S.QuestionCardLayer>
+          </Slide>
+        ))}
+      </TransitionGroup>
     )
   }
 }
