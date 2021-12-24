@@ -30,6 +30,8 @@ const getContainedCss = (color) => `
 `
 
 export const OptionButton = styled(Button)`
+  width: 100%;
+  height: 64px;
   ${({ color, variant }) => {
     if (variant === 'contained' && bgColors[color]) return getContainedCss(color)
     if (variant === 'outlined' && bgColors[color])

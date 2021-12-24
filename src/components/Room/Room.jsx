@@ -1,5 +1,5 @@
 import { inboxStream, outboxStream } from '@logic/socket.js'
-import { Button, Slide, Typography } from '@mui/material'
+import { Grid, Slide, Typography } from '@mui/material'
 import React, { Component } from 'react'
 import { TransitionGroup } from 'react-transition-group'
 import { filter } from 'rxjs/operators'
@@ -104,50 +104,59 @@ class Room extends Component {
         {[this.state.question].map((question) => (
           <Slide key={question} direction={'up'}>
             <S.QuestionCardLayer>
-              <S.QuestionCard>
-                <S.QuestionCardContent>
-                  <Typography variant="h5" align="center">
-                    {this.state.question}
-                  </Typography>
-                </S.QuestionCardContent>
-                {this.state.cards && this.state.cards.length ? (
-                  <S.QuestionCardCards>
-                    {this.state.cards.map((card) => (
-                      <Button
-                        key={card}
-                        size="small"
-                        color={'primary'}
-                        variant={'contained'}
-                        onMouseDown={() =>
-                          outboxStream.next({ type: 'GAME/CARD', payload: card, meta: { roomId: this.props.roomId } })
-                        }
-                      >
-                        {card}
-                      </Button>
-                    ))}
-                  </S.QuestionCardCards>
-                ) : null}
-                {this.state.options ? (
-                  <S.QuestionCardOptions>
-                    {this.state.options.map((option, i) => (
-                      <OptionButton
-                        key={option}
-                        color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
-                        variant={buttonStateVariants[this.state.buttonStates[i]] || 'contained'}
-                        onMouseDown={() =>
-                          outboxStream.next({
-                            type: 'GAME/ANSWER',
-                            payload: option,
-                            meta: { roomId: this.props.roomId },
-                          })
-                        }
-                      >
-                        {option}
-                      </OptionButton>
-                    ))}
-                  </S.QuestionCardOptions>
-                ) : null}
-              </S.QuestionCard>
+              <S.RoomGrid container spacing={2}>
+                <Grid item xs={12}>
+                  <S.QuestionCard>
+                    <S.QuestionCardContent>
+                      <Typography variant="h5" align="center">
+                        {this.state.question}
+                      </Typography>
+                    </S.QuestionCardContent>
+                    {/* {this.state.cards && this.state.cards.length ? (
+                      <S.QuestionCardCards>
+                        {this.state.cards.map((card) => (
+                          <Button
+                            key={card}
+                            size="small"
+                            color={'primary'}
+                            variant={'contained'}
+                            onMouseDown={() =>
+                              outboxStream.next({
+                                type: 'GAME/CARD',
+                                payload: card,
+                                meta: { roomId: this.props.roomId },
+                              })
+                            }
+                          >
+                            {card}
+                          </Button>
+                        ))}
+                      </S.QuestionCardCards>
+                    ) : null} */}
+                  </S.QuestionCard>
+                </Grid>
+                <S.OptionsGrid item xs={12} container spacing={2} options={this.state.options}>
+                  {this.state.options
+                    ? this.state.options.map((option, i) => (
+                        <Grid key={option} item xs={6}>
+                          <OptionButton
+                            color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
+                            variant={buttonStateVariants[this.state.buttonStates[i]] || 'contained'}
+                            onMouseDown={() =>
+                              outboxStream.next({
+                                type: 'GAME/ANSWER',
+                                payload: option,
+                                meta: { roomId: this.props.roomId },
+                              })
+                            }
+                          >
+                            {option}
+                          </OptionButton>
+                        </Grid>
+                      ))
+                    : null}
+                </S.OptionsGrid>
+              </S.RoomGrid>
             </S.QuestionCardLayer>
           </Slide>
         ))}
