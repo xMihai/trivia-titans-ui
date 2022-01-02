@@ -1,5 +1,10 @@
 import styled from '@emotion/styled'
-import { Button } from '@mui/material'
+import { Button, Grid } from '@mui/material'
+
+export const OptionsGrid = styled(Grid)`
+  ${({ options }) => (options ? null : 'visibility: hidden;')}
+  height: 176px;
+`
 
 const bgColors = {
   primary: 'rgba(127, 222, 255, 0.5)',

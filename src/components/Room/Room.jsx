@@ -4,24 +4,10 @@ import React, { Component } from 'react'
 import { TransitionGroup } from 'react-transition-group'
 import { filter } from 'rxjs/operators'
 
-import OptionButton from './OptionButton'
+import Options from './Options'
 import * as S from './styled'
 
-const defaultState = { question: '', options: null, cards: [], buttonStates: [null, null, null, null] }
-const buttonStateColors = {
-  CORRECT: 'success',
-  INCORRECT: 'error',
-  KNOWN_INCORRECT: 'error',
-  UNKNWON: 'primary',
-  KNOWN_CORRECT: 'success',
-}
-const buttonStateVariants = {
-  CORRECT: 'contained',
-  INCORRECT: 'contained',
-  KNOWN_INCORRECT: 'outlined',
-  UNKNOWN: 'outlined',
-  KNOWN_CORRECT: 'outlined',
-}
+const defaultState = { question: '', cards: [] }
 
 class Room extends Component {
   constructor(...args) {
@@ -30,66 +16,21 @@ class Room extends Component {
   }
 
   resetGame() {
+    //TODO: check why cards must be kept
     this.setState({ ...defaultState, cards: this.state.cards })
-  }
-
-  updateWithSolution(payload) {
-    const index = this.state.options.indexOf(payload.option)
-    this.setState({
-      buttonStates: this.state.buttonStates.map((buttonState, i) =>
-        i === index ? payload.status : payload.status === 'CORRECT' ? 'KNOWN_INCORRECT' : buttonState
-      ),
-    })
-  }
-
-  updateWithFinalSolution(payload) {
-    const index = this.state.options.indexOf(payload)
-    this.setState({
-      buttonStates: this.state.buttonStates.map((buttonState, i) =>
-        i === index
-          ? buttonState === 'CORRECT'
-            ? buttonState
-            : 'KNOWN_CORRECT'
-          : buttonState === 'INCORRECT'
-          ? buttonState
-          : 'KNOWN_INCORRECT'
-      ),
-    })
-  }
-
-  updateWithResults(payload) {
-    const index = this.state.options.indexOf(payload.correctAnswer)
-    if (this.state.buttonStates[index] !== 'CORRECT')
-      this.setState({
-        buttonStates: this.state.buttonStates.map((buttonState, i) => (i === index ? 'KNOWN_CORRECT' : buttonState)),
-      })
-  }
-
-  updateIncorrect(incorrectAnswers) {
-    this.setState({
-      buttonStates: this.state.buttonStates.map((option, i) =>
-        incorrectAnswers.includes(this.state.options[i]) ? 'KNOWN_INCORRECT' : option
-      ),
-    })
   }
 
   componentDidMount() {
     this.setState({
-      roomStreamSubscription: inboxStream.pipe(filter((event) => event.type.startsWith('GAME/'))).subscribe((event) => {
-        if (event.type === 'GAME/START') this.resetGame()
-        if (event.type === 'GAME/QUESTION') this.setState({ question: event.payload })
-        if (event.type === 'GAME/OPTIONS') this.setState({ options: event.payload })
+      roomStreamSubscription: inboxStream.subscribe((event) => {
+        if (event.type === 'ROUND/START') this.resetGame()
+        if (event.type === 'ROUND/QUESTION') this.setState({ question: event.payload })
         if (event.type === 'GAME/CARDS') this.setState({ cards: event.payload })
-        if (event.type === 'GAME/TIP') this.updateIncorrect(event.payload)
-        if (event.type === 'GAME/UPDATE')
+        if (event.type === 'ROUND/UPDATE')
           this.setState({
             question: event.payload.question,
-            options: event.payload.options,
             cards: event.payload.cards,
           })
-        if (event.type === 'GAME/SOLUTION') this.updateWithSolution(event.payload)
-        if (event.type === 'GAME/SOLUTION/FINAL') this.updateWithFinalSolution(event.payload)
-        if (event.type === 'GAME/RESULTS') this.updateWithResults(event.payload)
       }),
     })
   }
@@ -135,27 +76,7 @@ class Room extends Component {
                     ) : null} */}
                   </S.QuestionCard>
                 </Grid>
-                <S.OptionsGrid item xs={12} container spacing={2} options={this.state.options}>
-                  {this.state.options
-                    ? this.state.options.map((option, i) => (
-                        <Grid key={option} item xs={6}>
-                          <OptionButton
-                            color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
-                            variant={buttonStateVariants[this.state.buttonStates[i]] || 'contained'}
-                            onMouseDown={() =>
-                              outboxStream.next({
-                                type: 'GAME/ANSWER',
-                                payload: option,
-                                meta: { roomId: this.props.roomId },
-                              })
-                            }
-                          >
-                            {option}
-                          </OptionButton>
-                        </Grid>
-                      ))
-                    : null}
-                </S.OptionsGrid>
+                <Options roomId={this.props.roomId} />
               </S.RoomGrid>
             </S.QuestionCardLayer>
           </Slide>
