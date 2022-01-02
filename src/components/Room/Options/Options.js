@@ -1,6 +1,7 @@
 import { inboxStream, outboxStream } from '@logic/socket.js'
 import { Grid } from '@mui/material'
 import React, { Component } from 'react'
+import { Transition } from 'react-transition-group'
 
 import * as S from './styled'
 
@@ -19,7 +20,8 @@ const buttonStateVariants = {
   KNOWN_CORRECT: 'outlined',
 }
 
-const defaultState = { options: null, buttonStates: [null, null, null, null] }
+const fourItems = [null, null, null, null]
+const defaultState = { options: [], buttonStates: fourItems }
 
 class Options extends Component {
   constructor(...args) {
@@ -79,7 +81,7 @@ class Options extends Component {
         if (event.type === 'ROUND/TIP') this.updateIncorrect(event.payload)
         if (event.type === 'ROUND/UPDATE')
           this.setState({
-            options: event.payload.options,
+            options: event.payload.options || [],
           })
         if (event.type === 'ROUND/SOLUTION') this.updateWithSolution(event.payload)
         if (event.type === 'ROUND/SOLUTION/FINAL') this.updateWithFinalSolution(event.payload)
@@ -95,25 +97,29 @@ class Options extends Component {
   render() {
     return (
       <S.OptionsGrid item xs={12} container spacing={2} options={this.state.options}>
-        {this.state.options
-          ? this.state.options.map((option, i) => (
-              <Grid key={option} item xs={6}>
+        {fourItems.map((_, i) => (
+          <Grid key={`${i}`} item xs={6}>
+            <Transition in={!!this.state.options[i]} timeout={500}>
+              {(transitionState) => (
                 <S.OptionButton
+                  transitionstate={transitionState}
+                  index={i}
                   color={buttonStateColors[this.state.buttonStates[i]] || 'primary'}
                   variant={buttonStateVariants[this.state.buttonStates[i]] || 'contained'}
                   onMouseDown={() =>
                     outboxStream.next({
                       type: 'ROUND/ANSWER',
-                      payload: option,
+                      payload: this.state.options[i],
                       meta: { roomId: this.props.roomId },
                     })
                   }
                 >
-                  {option}
+                  {this.state.options[i]}
                 </S.OptionButton>
-              </Grid>
-            ))
-          : null}
+              )}
+            </Transition>
+          </Grid>
+        ))}
       </S.OptionsGrid>
     )
   }

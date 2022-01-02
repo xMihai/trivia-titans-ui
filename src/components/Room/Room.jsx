@@ -43,7 +43,7 @@ class Room extends Component {
     return (
       <TransitionGroup component={S.Room} appear={true}>
         {[this.state.question].map((question) => (
-          <Slide key={question} direction={'up'}>
+          <Slide key={question} direction={'up'} timeout={500}>
             <S.QuestionCardLayer>
               <S.RoomGrid container spacing={2}>
                 <Grid item xs={12}>

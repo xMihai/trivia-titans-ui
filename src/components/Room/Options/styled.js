@@ -34,24 +34,41 @@ const getContainedCss = (color) => `
   }
 `
 
-export const OptionButton = styled(Button)`
-  width: 100%;
-  height: 64px;
-  ${({ color, variant }) => {
-    if (variant === 'contained' && bgColors[color]) return getContainedCss(color)
-    if (variant === 'outlined' && bgColors[color])
-      return `
+const optionButtonStyles = ({ color, variant }) => {
+  if (variant === 'contained' && bgColors[color]) return getContainedCss(color)
+  if (variant === 'outlined' && bgColors[color])
+    return `
+  background-color: transparent;
+  box-shadow: 0 0 0 2px ${colors[color]} inset;
+  color: ${colors[color]};
+  border: none;
+
+  &:hover {
     background-color: transparent;
     box-shadow: 0 0 0 2px ${colors[color]} inset;
     color: ${colors[color]};
     border: none;
-
-    &:hover {
-      background-color: transparent;
-      box-shadow: 0 0 0 2px ${colors[color]} inset;
-      color: ${colors[color]};
-      border: none;
-    }
+  }
 `
-  }}
+}
+
+const optionButtonEffects = ({ transitionstate, index }) => {
+  switch (transitionstate) {
+    case 'exited':
+      return `
+        opacity: 0;
+        transform: scale(0.9);
+      `
+    case 'entering':
+      return `
+        transition: opacity 300ms ease-in ${index * 50}ms, transform 250ms ease-in ${index * 50}ms;
+      `
+  }
+}
+
+export const OptionButton = styled(Button)`
+  width: 100%;
+  height: 64px;
+  ${optionButtonStyles}
+  ${optionButtonEffects}
 `
