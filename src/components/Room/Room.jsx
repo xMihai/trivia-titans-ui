@@ -1,13 +1,12 @@
-import { inboxStream, outboxStream } from '@logic/socket.js'
+import { roundQuestionObs } from '@logic/room'
 import { Grid, Slide, Typography } from '@mui/material'
 import React, { Component } from 'react'
 import { TransitionGroup } from 'react-transition-group'
-import { filter } from 'rxjs/operators'
 
 import Options from './Options'
 import * as S from './styled'
 
-const defaultState = { question: '', cards: [] }
+const defaultState = { question: '' }
 
 class Room extends Component {
   constructor(...args) {
@@ -15,28 +14,16 @@ class Room extends Component {
     this.state = { ...defaultState }
   }
 
-  resetGame() {
-    //TODO: check why cards must be kept
-    this.setState({ ...defaultState, cards: this.state.cards })
-  }
-
   componentDidMount() {
     this.setState({
-      roomStreamSubscription: inboxStream.subscribe((event) => {
-        if (event.type === 'ROUND/START') this.resetGame()
-        if (event.type === 'ROUND/QUESTION') this.setState({ question: event.payload })
-        if (event.type === 'GAME/CARDS') this.setState({ cards: event.payload })
-        if (event.type === 'ROUND/UPDATE')
-          this.setState({
-            question: event.payload.question,
-            cards: event.payload.cards,
-          })
+      roundQuestionSubscription: roundQuestionObs.subscribe((question) => {
+        if (this.state.question !== question) this.setState({ question })
       }),
     })
   }
 
   componentWillUnmount() {
-    this.state.roomStreamSubscription.unsubscribe()
+    this.state.roundQuestionSubscription.unsubscribe()
   }
 
   render() {
